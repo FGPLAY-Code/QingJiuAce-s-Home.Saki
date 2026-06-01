@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清久Aceの小窝</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div id="sakura-container"></div>
+    
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="title">清久Aceの小窝</h1>
+        </header>
+        
+        <nav class="tabs">
+            <button class="tab active" data-tab="tools">工具</button>
+        </nav>
+        
+        <main class="content">
+            <div id="tools" class="tab-content active">
+                <div class="tools-grid">
+                    {% for tool in tools %}
+                    <a href="{{ tool.url }}" class="tool-card-link">
+                        <div class="tool-card">
+                            <h3 class="tool-name">{{ tool.name }}</h3>
+                            <p class="tool-desc">{{ tool.description }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="/static/js/sakura.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

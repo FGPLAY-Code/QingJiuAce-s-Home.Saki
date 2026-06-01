@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping工具 - 清久Aceの小窝</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div id="sakura-container"></div>
+    
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="title">Ping工具</h1>
+        </header>
+        
+        <nav class="tabs">
+            <a href="/network-tools" class="tab">返回网络工具</a>
+        </nav>
+        
+        <main class="content">
+            <div id="tools" class="tab-content active">
+                <div class="tools-grid" style="max-width: 800px;">
+                    <div class="tool-card" style="width: 100%;">
+                        <h3 class="tool-name">Ping配置</h3>
+                        <div style="margin-bottom: 15px;">
+                            <input type="text" id="ping-host" placeholder="请输入主机地址或IP" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--sakura-pink); margin-bottom: 10px; outline: none;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: var(--sakura-deep);">选择模式</label>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                    <input type="radio" name="ping-mode" value="single" checked> 单Ping
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                    <input type="radio" name="ping-mode" value="normal"> 正常Ping(4次)
+                                </label>
+                            </div>
+                        </div>
+                        <button class="tab" onclick="executePing()">执行Ping</button>
+                        <div id="ping-result" style="margin-top: 20px; text-align: left; background: rgba(0,0,0,0.1); padding: 15px; border-radius: 10px; display: none;">
+                            <pre id="ping-output" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="/static/js/sakura.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script>
+        function executePing() {
+            const host = document.getElementById('ping-host').value;
+            const mode = document.querySelector('input[name="ping-mode"]:checked').value;
+            const resultDiv = document.getElementById('ping-result');
+            const outputDiv = document.getElementById('ping-output');
+            
+            if (!host) {
+                alert('请输入主机地址');
+                return;
+            }
+            
+            resultDiv.style.display = 'block';
+            outputDiv.textContent = '执行中...';
+            
+            fetch('/api/ping', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ host: host, mode: mode })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    outputDiv.textContent = data.output || data.error || '执行完成';
+                } else {
+                    outputDiv.textContent = '错误: ' + data.error;
+                }
+            })
+            .catch(error => {
+                outputDiv.textContent = '请求失败: ' + error;
+            });
+        }
+    </script>
+</body>
+</html>

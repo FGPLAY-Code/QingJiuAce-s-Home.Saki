@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP查询 - 清久Aceの小窝</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div id="sakura-container"></div>
+    
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="title">IP查询</h1>
+        </header>
+        
+        <nav class="tabs">
+            <a href="/network-tools" class="tab">返回网络工具</a>
+        </nav>
+        
+        <main class="content">
+            <div id="tools" class="tab-content active">
+                <div class="tools-grid" style="max-width: 800px;">
+                    <div class="tool-card" style="width: 100%;">
+                        <h3 class="tool-name">本机IP地址</h3>
+                        <p class="tool-desc" id="local-ip">加载中...</p>
+                        <button class="tab" onclick="refreshLocalIP()" style="margin-top: 15px;">刷新</button>
+                    </div>
+                    <div class="tool-card" style="width: 100%;">
+                        <h3 class="tool-name">公网IP地址</h3>
+                        <p class="tool-desc" id="public-ip">加载中...</p>
+                        <button class="tab" onclick="refreshPublicIP()" style="margin-top: 15px;">刷新</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="/static/js/sakura.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script>
+        function refreshLocalIP() {
+            document.getElementById('local-ip').textContent = '加载中...';
+            fetch('/api/get-local-ip')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('local-ip').textContent = data.ip;
+                    } else {
+                        document.getElementById('local-ip').textContent = '获取失败: ' + data.error;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('local-ip').textContent = '请求失败: ' + error;
+                });
+        }
+        
+        function refreshPublicIP() {
+            document.getElementById('public-ip').textContent = '加载中...';
+            fetch('/api/get-public-ip')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('public-ip').textContent = data.ip;
+                    } else {
+                        document.getElementById('public-ip').textContent = '获取失败: ' + data.error;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('public-ip').textContent = '请求失败: ' + error;
+                });
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshLocalIP();
+            refreshPublicIP();
+        });
+    </script>
+</body>
+</html>

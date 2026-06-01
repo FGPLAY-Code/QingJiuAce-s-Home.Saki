@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSH连接 - 清久Aceの小窝</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div id="sakura-container"></div>
+    
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="title">SSH连接</h1>
+        </header>
+        
+        <nav class="tabs">
+            <a href="/network-tools" class="tab">返回网络工具</a>
+        </nav>
+        
+        <main class="content">
+            <div id="tools" class="tab-content active">
+                <div class="tools-grid" style="max-width: 800px;">
+                    <div class="tool-card" style="width: 100%;">
+                        <h3 class="tool-name">SSH连接配置</h3>
+                        <div style="margin-bottom: 15px;">
+                            <input type="text" id="ssh-host" placeholder="主机地址" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--sakura-pink); margin-bottom: 10px; outline: none;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <input type="text" id="ssh-port" placeholder="端口 (默认22)" value="22" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--sakura-pink); margin-bottom: 10px; outline: none;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <input type="text" id="ssh-username" placeholder="用户名" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--sakura-pink); margin-bottom: 10px; outline: none;">
+                        </div>
+                        <button class="tab" onclick="connectSSH()">连接</button>
+                        <div id="ssh-result" style="margin-top: 20px; color: var(--sakura-deep);"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="/static/js/sakura.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script>
+        function connectSSH() {
+            const host = document.getElementById('ssh-host').value;
+            const port = document.getElementById('ssh-port').value || '22';
+            const username = document.getElementById('ssh-username').value;
+            const resultDiv = document.getElementById('ssh-result');
+            
+            if (!host || !username) {
+                alert('请填写完整的连接信息');
+                return;
+            }
+            
+            resultDiv.textContent = '正在启动SSH连接...';
+            
+            fetch('/api/ssh-connect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ host: host, port: port, username: username })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.textContent = data.message;
+                } else {
+                    resultDiv.textContent = '错误: ' + data.error;
+                }
+            })
+            .catch(error => {
+                resultDiv.textContent = '请求失败: ' + error;
+            });
+        }
+    </script>
+</body>
+</html>

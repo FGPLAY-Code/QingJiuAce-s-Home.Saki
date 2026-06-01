@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目日志 - 清久Aceの小窝</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .project-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 200px;
+        }
+        .project-item {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .project-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateX(5px);
+        }
+        .project-item.active {
+            background: var(--sakura-pink);
+            color: white;
+        }
+        .project-count {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        .logs-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .logs-main {
+            flex: 1;
+        }
+        .log-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .log-card:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-3px);
+        }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .log-title {
+            font-size: 1.1rem;
+            color: var(--sakura-deep);
+            font-weight: 600;
+        }
+        .log-time {
+            font-size: 0.85rem;
+            color: #998888;
+        }
+        .log-content {
+            color: #665555;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        .log-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .log-btn {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        .log-btn.edit {
+            background: var(--sakura-pink);
+            color: white;
+        }
+        .log-btn.delete {
+            background: #ff6b6b;
+            color: white;
+        }
+        .log-btn:hover {
+            opacity: 0.85;
+            transform: scale(1.05);
+        }
+        .add-btn {
+            background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-light));
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .add-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 24px rgba(255, 133, 162, 0.4);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--sakura-deep);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--sakura-deep);
+            font-weight: 500;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--sakura-light);
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        .form-input:focus {
+            border-color: var(--sakura-pink);
+            box-shadow: 0 0 0 3px rgba(255, 133, 162, 0.2);
+        }
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--sakura-light);
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            min-height: 150px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .form-textarea:focus {
+            border-color: var(--sakura-pink);
+            box-shadow: 0 0 0 3px rgba(255, 133, 162, 0.2);
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .modal-btn.cancel {
+            background: #e0e0e0;
+            color: #666;
+        }
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-light));
+            color: white;
+        }
+        .modal-btn:hover {
+            transform: scale(1.02);
+        }
+        .no-logs {
+            text-align: center;
+            padding: 40px;
+            color: #998888;
+        }
+        .delete-project-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .delete-project-btn:hover {
+            opacity: 0.85;
+        }
+    </style>
+</head>
+<body>
+    <div id="sakura-container"></div>
+    
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="title">项目日志</h1>
+        </header>
+        
+        <nav class="tabs">
+            <a href="/dev-tools" class="tab">返回开发工具</a>
+        </nav>
+        
+        <main class="content">
+            <div id="tools" class="tab-content active">
+                <div class="logs-container">
+                    <div class="project-sidebar">
+                        <button class="add-btn" onclick="openAddModal()">+ 新建项目/日志</button>
+                        <div id="project-list"></div>
+                    </div>
+                    <div class="logs-main">
+                        <div id="logs-list" class="no-logs">请选择或新建一个项目</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <h3 class="modal-title">新建日志</h3>
+            <div class="form-group">
+                <label class="form-label">项目名称</label>
+                <input type="text" id="newProjectName" class="form-input" placeholder="输入项目名称">
+            </div>
+            <div class="form-group">
+                <label class="form-label">日志标题</label>
+                <input type="text" id="newLogTitle" class="form-input" placeholder="输入日志标题">
+            </div>
+            <div class="form-group">
+                <label class="form-label">日志内容</label>
+                <textarea id="newLogContent" class="form-textarea" placeholder="输入日志内容"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeAddModal()">取消</button>
+                <button class="modal-btn confirm" onclick="addLog()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h3 class="modal-title">编辑日志</h3>
+            <div class="form-group">
+                <label class="form-label">日志标题</label>
+                <input type="text" id="editLogTitle" class="form-input" placeholder="输入日志标题">
+            </div>
+            <div class="form-group">
+                <label class="form-label">日志内容</label>
+                <textarea id="editLogContent" class="form-textarea" placeholder="输入日志内容"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeEditModal()">取消</button>
+                <button class="modal-btn confirm" onclick="updateLog()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/sakura.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script>
+        let currentProject = null;
+        let editingLogId = null;
+        
+        function loadProjects() {
+            fetch('/api/get-projects')
+                .then(response => response.json())
+                .then(data => {
+                    const projectList = document.getElementById('project-list');
+                    projectList.innerHTML = '';
+                    
+                    data.projects.forEach(project => {
+                        const div = document.createElement('div');
+                        div.className = 'project-item' + (currentProject === project.name ? ' active' : '');
+                        div.innerHTML = `
+                            <span>${project.name}</span>
+                            <span class="project-count">${project.log_count}</span>
+                        `;
+                        div.onclick = () => selectProject(project.name);
+                        projectList.appendChild(div);
+                    });
+                    
+                    if (data.projects.length > 0 && !currentProject) {
+                        selectProject(data.projects[0].name);
+                    }
+                });
+        }
+        
+        function selectProject(projectName) {
+            currentProject = projectName;
+            loadProjects();
+            loadLogs();
+        }
+        
+        function loadLogs() {
+            if (!currentProject) return;
+            
+            fetch(`/api/get-logs/${encodeURIComponent(currentProject)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const logsList = document.getElementById('logs-list');
+                    
+                    if (data.logs.length === 0) {
+                        logsList.innerHTML = '<div class="no-logs">该项目暂无日志，点击上方按钮添加</div>';
+                    } else {
+                        logsList.innerHTML = data.logs.map(log => `
+                            <div class="log-card">
+                                <div class="log-header">
+                                    <div class="log-title">${escapeHtml(log.title)}</div>
+                                    <div class="log-time">${log.created_at}</div>
+                                </div>
+                                <div class="log-content">${escapeHtml(log.content)}</div>
+                                <div class="log-actions">
+                                    <button class="log-btn edit" onclick="openEditModal(${log.id}, '${escapeHtml(log.title)}', '${escapeHtml(log.content)}')">编辑</button>
+                                    <button class="log-btn delete" onclick="deleteLog(${log.id})">删除</button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-project-btn';
+                    deleteBtn.textContent = '删除当前项目';
+                    deleteBtn.onclick = deleteProject;
+                    logsList.appendChild(deleteBtn);
+                });
+        }
+        
+        function openAddModal() {
+            document.getElementById('newProjectName').value = currentProject || '';
+            document.getElementById('newLogTitle').value = '';
+            document.getElementById('newLogContent').value = '';
+            document.getElementById('addModal').classList.add('active');
+        }
+        
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+        }
+        
+        function addLog() {
+            const projectName = document.getElementById('newProjectName').value.trim();
+            const title = document.getElementById('newLogTitle').value.trim();
+            const content = document.getElementById('newLogContent').value.trim();
+            
+            if (!projectName || !title) {
+                alert('请填写项目名和标题');
+                return;
+            }
+            
+            fetch('/api/add-log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_name: projectName, title, content })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeAddModal();
+                    currentProject = projectName;
+                    loadProjects();
+                    loadLogs();
+                } else {
+                    alert('添加失败: ' + data.error);
+                }
+            });
+        }
+        
+        function openEditModal(logId, title, content) {
+            editingLogId = logId;
+            document.getElementById('editLogTitle').value = title;
+            document.getElementById('editLogContent').value = content;
+            document.getElementById('editModal').classList.add('active');
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            editingLogId = null;
+        }
+        
+        function updateLog() {
+            const title = document.getElementById('editLogTitle').value.trim();
+            const content = document.getElementById('editLogContent').value.trim();
+            
+            if (!title || !editingLogId) {
+                alert('请填写标题');
+                return;
+            }
+            
+            fetch('/api/update-log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_name: currentProject, log_id: editingLogId, title, content })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeEditModal();
+                    loadLogs();
+                } else {
+                    alert('更新失败: ' + data.error);
+                }
+            });
+        }
+        
+        function deleteLog(logId) {
+            if (!confirm('确定要删除这条日志吗？')) return;
+            
+            fetch('/api/delete-log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_name: currentProject, log_id: logId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadLogs();
+                } else {
+                    alert('删除失败: ' + data.error);
+                }
+            });
+        }
+        
+        function deleteProject() {
+            if (!confirm(`确定要删除项目"${currentProject}"及其所有日志吗？`)) return;
+            
+            fetch('/api/delete-project', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_name: currentProject })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentProject = null;
+                    document.getElementById('logs-list').innerHTML = '<div class="no-logs">请选择或新建一个项目</div>';
+                    loadProjects();
+                } else {
+                    alert('删除失败: ' + data.error);
+                }
+            });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadProjects);
+    </script>
+</body>
+</html>
